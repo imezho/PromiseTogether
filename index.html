@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FAF7F0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="같이지켜" />
+<title>같이지켜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet" />
+<style>
+/* ========== 기본 리셋 & 변수 ========== */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  /* 컬러 - 따뜻한 크림 베이스 */
+  --bg: #FAF7F0;
+  --bg-elev: #FFFFFF;
+  --bg-soft: #F2EDE2;
+  --bg-sage-soft: #E8F0E6;
+  --bg-coral-soft: #FCEAE0;
+  --bg-lavender-soft: #EDE8F2;
+  --bg-mute: #F5F1E6;
+
+  /* 텍스트 */
+  --ink-1: #2D2A24;
+  --ink-2: #5C5448;
+  --ink-3: #8B8170;
+  --ink-4: #B5AC9E;
+
+  /* 포인트 */
+  --sage: #7DA384;
+  --sage-dark: #6A8E72;
+  --sage-light: #A8C4AD;
+  --coral: #E89070;
+  --coral-dark: #D67555;
+  --lavender: #A89AC9;
+  --honey: #E8B765;
+  --sky: #7FB5D1;
+
+  /* 보더 */
+  --border-soft: #EDE7DA;
+  --border-mute: #F2EDE2;
+
+  /* 그림자 */
+  --shadow-card: 0 2px 8px rgba(93, 75, 47, 0.05), 0 1px 2px rgba(93, 75, 47, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(93, 75, 47, 0.08);
+  --shadow-fab: 0 4px 14px rgba(125, 163, 132, 0.32), 0 2px 6px rgba(125, 163, 132, 0.18);
+  --shadow-modal: 0 -8px 30px rgba(93, 75, 47, 0.12);
+
+  /* 트랜지션 */
+  --t-fast: 0.15s ease;
+  --t-med: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 폰트 */
+  --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
+}
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink-1);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss06' on, 'ss07' on;
+  letter-spacing: -0.01em;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+button {
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  letter-spacing: -0.01em;
+}
+
+input, textarea {
+  font-family: inherit;
+  outline: none;
+  border: none;
+  letter-spacing: -0.01em;
+}
+
+/* ========== 컨테이너 ========== */
+#app {
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--bg);
+  position: relative;
+  padding-bottom: 96px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.screen { 
+  animation: screenIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== 로그인 화면 ========== */
+.login-wrap {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, #FAF7F0 0%, #F0E9D9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-wrap::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(168, 196, 173, 0.25), transparent 70%);
+  border-radius: 50%;
+}
+.login-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: -120px;
+  left: -80px;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(232, 144, 112, 0.18), transparent 70%);
+  border-radius: 50%;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 36px 28px;
+  box-shadow: 0 8px 32px rgba(93, 75, 47, 0.08), 0 2px 8px rgba(93, 75, 47, 0.04);
+  position: relative;
+  z-index: 1;
+  animation: cardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.login-emoji {
+  font-size: 52px;
+  text-align: center;
+  margin-bottom: 4px;
+  animation: bounce 2s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink-1);
+  text-align: center;
+  letter-spacing: -0.04em;
+  margin-top: 8px;
+}
+
+.login-sub {
+  font-size: 14px;
+  color: var(--ink-3);
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.login-form { margin-top: 32px; }
+
+.input-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.text-input {
+  width: 100%;
+  padding: 15px 18px;
+  background: rgba(250, 247, 240, 0.7);
+  border: 1.5px solid var(--border-soft);
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-1);
+  transition: all var(--t-med);
+}
+.text-input:focus {
+  background: white;
+  border-color: var(--sage);
+  box-shadow: 0 0 0 4px rgba(125, 163, 132, 0.12);
+}
+.text-input::placeholder { color: var(--ink-4); }
+
+.user-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.user-chip {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  background: var(--bg-mute);
+  color: var(--ink-2);
+  border-radius: 100px;
+  transition: all var(--t-fast);
+}
+
+.user-chips-label {
+  font-size: 11px;
+  color: var(--ink-4);
+  margin-bottom: 8px;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+.error-text {
+  font-size: 12px;
+  color: var(--coral-dark);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: var(--sage);
+  color: white;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 24px;
+  transition: all var(--t-med);
+}
+.btn-primary:hover { background: var(--sage-dark); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ========== 헤더 ========== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-back {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-card);
+  transition: all var(--t-fast);
+}
+.header-back:active { transform: scale(0.92); }
+
+.header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: -0.02em;
+}
+
+.header-spacer { width: 38px; }
+
+/* ========== 홈 헤더 ========== */
+.home-header {
+  padding: 24px 20px 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.greet-small { font-size: 13px; color: var(--ink-3); font-weight: 500; }
+.greet-big { font-size: 24px; font-weight: 800; color: var(--ink-1); margin-top: 2px; letter-spacing: -0.04em; }
+
+.bell {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-elev);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-card);
+  transition: all var(--t-fast);
+}
+.bell:active { transform: scale(0.92); }
+
+.bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  background: var(--coral);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg);
+  animation: badgePulse 1.8s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* ========== 날짜 네비게이션 ========== */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 4px 20px 16px;
+  padding: 10px 12px;
+  background: var(--bg-elev);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.date-arrow {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  transition: all var(--t-fast);
+}
+.date-arrow:active { transform: scale(0.9); background: var(--bg-mute); }
+.date-arrow:disabled { opacity: 0.3; }
+
+.date-label {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: -0.02em;
+}
+
+.date-today-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: var(--bg-sage-soft);
+  color: var(--sage-dark);
+  border-radius: 100px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.date-past-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: var(--bg-mute);
+  color: var(--ink-3);
+  border-radius: 100px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ========== 진행률 카드 ========== */
+.progress-card {
+  margin: 0 20px 20px;
+  padding: 22px;
+  background: linear-gradient(135deg, #7DA384 0%, #6A8E72 100%);
+  border-radius: 22px;
+  box-shadow: 0 6px 20px rgba(125, 163, 132, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+.progress-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+  border-radius: 50%;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.progress-info-label { font-size: 12px; color: rgba(255,255,255,0.85); font-weight: 600; letter-spacing: 0.02em; }
+.progress-info-num { font-size: 30px; font-weight: 800; color: white; margin-top: 4px; letter-spacing: -0.04em; }
+.progress-info-num .sub { font-size: 16px; opacity: 0.65; font-weight: 700; }
+
+/* ========== 탭 ========== */
+.tab-row {
+  display: flex;
+  padding: 0 20px;
+  margin-bottom: 12px;
+  gap: 6px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 11px 8px;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 14px;
+  transition: all var(--t-med);
+  letter-spacing: -0.01em;
+}
+.tab-btn.active {
+  background: var(--ink-1);
+  color: white;
+}
+
+/* ========== 약속 카드 ========== */
+.content { padding: 0 20px; }
+
+.promise-card {
+  background: var(--bg-elev);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--t-med);
+  animation: cardSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+.promise-card.done-state { background: var(--bg-sage-soft); }
+.promise-card.fail-state { background: var(--bg-coral-soft); }
+
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.promise-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.check-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-soft);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--t-spring);
+  position: relative;
+}
+.check-circle.done {
+  background: var(--sage);
+  border-color: var(--sage);
+}
+.check-circle.fail {
+  background: var(--coral);
+  border-color: var(--coral);
+}
+.check-circle:active { transform: scale(0.85); }
+
+.check-icon {
+  color: white;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all var(--t-spring);
+}
+.check-circle.done .check-icon,
+.check-circle.fail .check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.promise-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.promise-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.promise-emoji { font-size: 18px; flex-shrink: 0; }
+
+.promise-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.promise-card.done-state .promise-name {
+  color: var(--ink-2);
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-4);
+}
+
+.promise-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.meta-icon { font-size: 11px; }
+
+.meta-streak { color: var(--honey); }
+.meta-streak .meta-icon { font-size: 12px; }
+
+.lock-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--bg-lavender-soft);
+  color: var(--lavender);
+  border-radius: 100px;
+  font-weight: 700;
+}
+
+/* ========== 빈 상태 ========== */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+.empty-emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--ink-1); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; color: var(--ink-3); font-weight: 500; }
+
+/* ========== 둘러보기 카드 ========== */
+.room-card {
+  background: var(--bg-elev);
+  border-radius: 20px;
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--t-med);
+  animation: cardSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+.room-card:active { transform: scale(0.98); }
+.room-card.secret-locked { background: linear-gradient(135deg, var(--bg-lavender-soft), #F4F0F8); }
+
+.room-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.room-emoji-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--bg-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.secret-locked .room-emoji-box {
+  background: var(--lavender);
+  color: white;
+}
+
+.room-info { flex: 1; min-width: 0; }
+
+.room-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-1);
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-desc {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.room-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.01em;
+}
+.room-badge.public { background: var(--bg-sage-soft); color: var(--sage-dark); }
+.room-badge.secret { background: var(--bg-lavender-soft); color: var(--lavender); }
+.room-badge.member { background: var(--bg-coral-soft); color: var(--coral-dark); }
+.room-badge.count { background: var(--bg-mute); color: var(--ink-3); }
+
+/* ========== 약속 상세 ========== */
+.detail-hero {
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--bg-elev);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.detail-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(168, 196, 173, 0.18), transparent 70%);
+  border-radius: 50%;
+}
+.detail-hero-emoji { font-size: 52px; margin-bottom: 8px; position: relative; }
+.detail-hero-name { font-size: 22px; font-weight: 800; color: var(--ink-1); letter-spacing: -0.03em; position: relative; }
+.detail-hero-desc { font-size: 13px; color: var(--ink-3); margin-top: 6px; font-weight: 500; position: relative; }
+.detail-hero-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 6px 14px;
+  background: var(--bg-mute);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  position: relative;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 24px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border-radius: 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.member-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.member-name { font-size: 15px; font-weight: 600; color: var(--ink-1); }
+.member-name .me-tag { font-size: 11px; color: var(--ink-4); font-weight: 500; margin-left: 4px; }
+
+.member-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--honey);
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.poke-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  background: var(--bg-coral-soft);
+  color: var(--coral-dark);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all var(--t-fast);
+}
+.poke-btn:active { transform: scale(0.92); }
+.poke-btn.sent {
+  animation: pokeSent 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pokeSent {
+  0% { transform: scale(1); background: var(--bg-coral-soft); }
+  40% { transform: scale(1.18); background: var(--coral); color: white; }
+  100% { transform: scale(1); background: var(--bg-coral-soft); color: var(--coral-dark); }
+}
+
+/* ========== 댓글 ========== */
+.comment-item {
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border-radius: 14px;
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-card);
+  animation: cardSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.comment-author { font-size: 12px; font-weight: 700; color: var(--sage-dark); margin-bottom: 3px; }
+.comment-text { font-size: 14px; color: var(--ink-1); line-height: 1.4; }
+
+.comment-empty {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 13px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 13px 16px;
+  background: var(--bg-elev);
+  border: 1.5px solid var(--border-soft);
+  border-radius: 100px;
+  font-size: 14px;
+  color: var(--ink-1);
+  transition: all var(--t-med);
+}
+.comment-input:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(125, 163, 132, 0.12);
+}
+
+.comment-send {
+  width: 46px;
+  height: 46px;
+  background: var(--sage);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+  transition: all var(--t-fast);
+  flex-shrink: 0;
+}
+.comment-send:active { transform: scale(0.9); }
+.comment-send:disabled { background: var(--border-soft); }
+
+/* ========== 알림함 ========== */
+.poke-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-elev);
+  border-radius: 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.poke-avatar {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-coral-soft);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.poke-text { flex: 1; min-width: 0; }
+.poke-line { font-size: 14px; color: var(--ink-1); }
+.poke-from { font-weight: 700; }
+.poke-meta { font-size: 11px; color: var(--ink-3); margin-top: 2px; font-weight: 500; }
+
+.text-mini-btn {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+.text-mini-btn:active { background: var(--bg-mute); }
+
+/* ========== 통계 ========== */
+.stat-card {
+  background: var(--bg-elev);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.stat-card-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.stat-rate-pill {
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.stat-rate-pill.high { background: var(--bg-sage-soft); color: var(--sage-dark); }
+.stat-rate-pill.mid { background: #FDF4E3; color: #B88A2C; }
+.stat-rate-pill.low { background: var(--bg-coral-soft); color: var(--coral-dark); }
+
+.stat-days { display: flex; justify-content: space-between; gap: 6px; }
+
+.stat-day {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-day-label {
+  font-size: 10px;
+  color: var(--ink-4);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.stat-day-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 40px;
+  margin: 0 auto;
+  border-radius: 12px;
+  background: var(--border-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+}
+.stat-day-cell.done { background: var(--sage); }
+.stat-day-cell.fail { background: var(--coral); }
+
+.stat-counts {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-soft);
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.stat-counts .done-dot { display: inline-block; width: 6px; height: 6px; background: var(--sage); border-radius: 50%; margin-right: 4px; }
+.stat-counts .fail-dot { display: inline-block; width: 6px; height: 6px; background: var(--coral); border-radius: 50%; margin-right: 4px; }
+.stat-counts .skip-dot { display: inline-block; width: 6px; height: 6px; background: var(--border-soft); border-radius: 50%; margin-right: 4px; }
+
+/* ========== 하단 탭바 ========== */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-mute);
+  padding: 10px 24px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  transition: all var(--t-fast);
+  min-width: 60px;
+}
+.tab-item:active { background: var(--bg-mute); }
+
+.tab-icon {
+  font-size: 20px;
+  filter: grayscale(0.4);
+  opacity: 0.5;
+  transition: all var(--t-med);
+}
+
+.tab-label {
+  font-size: 10px;
+  color: var(--ink-4);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: color var(--t-med);
+}
+
+.tab-item.active .tab-icon { filter: grayscale(0); opacity: 1; transform: scale(1.1); }
+.tab-item.active .tab-label { color: var(--sage-dark); }
+
+.fab {
+  width: 56px;
+  height: 56px;
+  background: var(--sage);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 300;
+  box-shadow: var(--shadow-fab);
+  transition: all var(--t-spring);
+  transform: translateY(-14px);
+}
+.fab:active { transform: translateY(-14px) scale(0.92); }
+
+/* ========== 모달 ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(45, 42, 36, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: overlayIn 0.2s ease;
+}
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  width: 100%;
+  max-width: 500px;
+  background: var(--bg);
+  border-radius: 28px 28px 0 0;
+  padding: 12px 20px 32px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-modal);
+  animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border-soft);
+  border-radius: 100px;
+  margin: 4px auto 16px;
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink-1);
+  letter-spacing: -0.03em;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: all var(--t-fast);
+}
+.modal-close:active { transform: scale(0.9); }
+
+.field-group { margin-bottom: 20px; }
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.emoji-btn {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: var(--bg-elev);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  transition: all var(--t-fast);
+}
+.emoji-btn:active { transform: scale(0.9); }
+.emoji-btn.selected {
+  background: var(--bg-sage-soft);
+  border-color: var(--sage);
+  transform: scale(1.05);
+}
+
+.visibility-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.vis-option {
+  padding: 14px;
+  background: var(--bg-elev);
+  border-radius: 16px;
+  border: 2px solid transparent;
+  transition: all var(--t-fast);
+  text-align: left;
+}
+.vis-option.selected {
+  border-color: var(--sage);
+  background: var(--bg-sage-soft);
+}
+
+.vis-emoji { font-size: 22px; }
+.vis-label { font-size: 14px; font-weight: 700; color: var(--ink-1); margin-top: 6px; }
+.vis-desc { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+.pin-input {
+  width: 100%;
+  padding: 18px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  font-variant-numeric: tabular-nums;
+  background: var(--bg-elev);
+  border: 1.5px solid var(--border-soft);
+  border-radius: 16px;
+  color: var(--ink-1);
+}
+.pin-input:focus { border-color: var(--sage); box-shadow: 0 0 0 4px rgba(125, 163, 132, 0.12); }
+
+.field-hint {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* ========== 토스트 ========== */
+.toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(45, 42, 36, 0.95);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 200;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 90%;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ========== 로딩 ========== */
+.loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-soft);
+  border-top-color: var(--sage);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text { font-size: 13px; color: var(--ink-3); font-weight: 500; }
+
+/* ========== 미세 디테일 ========== */
+::selection { background: var(--bg-sage-soft); color: var(--sage-dark); }
+::-webkit-scrollbar { width: 0; }
+
+</style>
+</head>
+<body>
+
+<div id="app"><div class="loading-screen"><div class="spinner"></div><div class="loading-text">준비하는 중...</div></div></div>
+
+<script>
+// ============================================================
+// 같이지켜 - Frontend
+// ============================================================
+
+// ⚠️ 여기에 본인의 Apps Script 웹 앱 URL을 넣으세요
+const API_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+// ============================================================
+// State
+// ============================================================
+const state = {
+  user: null,
+  users: [],
+  promises: [],
+  rooms: [], // 둘러보기용
+  todayChecks: {},
+  streaks: {},
+  pokes: [],
+  comments: {},
+  today: null,
+  viewDate: null,
+  view: 'login',
+  homeTab: 'mine', // 'mine' | 'discover'
+  selectedPromiseId: null,
+  statsData: {},
+  modal: null, // null | 'create' | 'pin' | 'leave'
+  pinTargetRoom: null,
+};
+
+// ============================================================
+// Storage
+// ============================================================
+const LS_KEY = 'gachi_nickname_v1';
+
+function saveNick(nick) {
+  try { localStorage.setItem(LS_KEY, nick); } catch(e){}
+}
+function loadNick() {
+  try { return localStorage.getItem(LS_KEY); } catch(e){ return null; }
+}
+function clearNick() {
+  try { localStorage.removeItem(LS_KEY); } catch(e){}
+}
+
+// ============================================================
+// API
+// ============================================================
+async function api(action, data = {}) {
+  if (!API_URL || API_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    return { ok: false, error: 'API_URL이 설정되지 않았어요. index.html 상단에서 설정해주세요.' };
+  }
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...data }),
+      redirect: 'follow',
+    });
+    return await res.json();
+  } catch (err) {
+    return { ok: false, error: '연결 오류: ' + err.message };
+  }
+}
+
+// ============================================================
+// Helpers
+// ============================================================
+function $(sel, root = document) { return root.querySelector(sel); }
+function $$(sel, root = document) { return [...root.querySelectorAll(sel)]; }
+
+function showToast(msg, ms = 2000) {
+  const old = $('.toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.transition = 'opacity 0.3s';
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 300);
+  }, ms);
+}
+
+function fmtDateLabel(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const days = ['일','월','화','수','목','금','토'];
+  const dow = days[dt.getDay()];
+  return `${m}월 ${d}일 (${dow})`;
+}
+
+function prevDay(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() - 1);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function nextDay(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + 1);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+function nextStatus(curr) {
+  // 미체크 → done → fail → 미체크
+  if (curr === null || curr === undefined) return 'done';
+  if (curr === 'done') return 'fail';
+  return null;
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+
+// ============================================================
+// Render Root
+// ============================================================
+function render() {
+  const app = $('#app');
+  if (state.view === 'login') return app.innerHTML = renderLogin();
+  if (state.view === 'home') {
+    app.innerHTML = renderHome();
+    bindHome();
+    return;
+  }
+  if (state.view === 'detail') {
+    app.innerHTML = renderDetail();
+    bindDetail();
+    return;
+  }
+  if (state.view === 'notifications') {
+    app.innerHTML = renderNotifications();
+    bindCommon();
+    return;
+  }
+  if (state.view === 'stats') {
+    app.innerHTML = renderStats();
+    bindCommon();
+    return;
+  }
+}
+
+// ============================================================
+// LOGIN VIEW
+// ============================================================
+function renderLogin() {
+  return `
+    <div class="login-wrap">
+      <div class="login-card">
+        <div class="login-emoji">🤝</div>
+        <h1 class="login-title">같이지켜</h1>
+        <p class="login-sub">친구랑 약속, 함께 지켜요</p>
+        <div class="login-form">
+          <label class="input-label">닉네임</label>
+          <input id="nickInput" class="text-input" type="text" placeholder="반에서 부르는 이름" maxlength="8" autocomplete="off" />
+          <div id="loginError"></div>
+          <button id="loginBtn" class="btn-primary">시작하기</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bindLogin() {
+  const input = $('#nickInput');
+  const btn = $('#loginBtn');
+  const err = $('#loginError');
+  
+  input.focus();
+  
+  const handle = async () => {
+    const nick = input.value.trim();
+    if (!nick) {
+      err.innerHTML = '<div class="error-text">닉네임을 입력해주세요</div>';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = '시작하는 중...';
+    const r = await api('login', { nickname: nick });
+    if (!r.ok) {
+      err.innerHTML = `<div class="error-text">${escapeHtml(r.error)}</div>`;
+      btn.disabled = false;
+      btn.textContent = '시작하기';
+      return;
+    }
+    state.user = r.nickname;
+    saveNick(r.nickname);
+    await loadAll();
+    state.view = 'home';
+    render();
+  };
+  
+  btn.onclick = handle;
+  input.onkeydown = e => { if (e.key === 'Enter') handle(); };
+}
+
+// ============================================================
+// LOAD ALL
+// ============================================================
+async function loadAll() {
+  const r = await api('init', { nickname: state.user, viewDate: state.viewDate || undefined });
+  if (!r.ok) {
+    showToast(r.error || '로딩 실패');
+    return;
+  }
+  state.users = r.users || [];
+  state.promises = r.promises || [];
+  state.todayChecks = r.todayChecks || {};
+  state.streaks = r.streaks || {};
+  state.pokes = r.pokes || [];
+  state.comments = r.comments || {};
+  state.today = r.today;
+  state.viewDate = r.viewDate || r.today;
+}
+
+async function loadDayData(date) {
+  const r = await api('getDayData', { nickname: state.user, viewDate: date });
+  if (!r.ok) {
+    showToast(r.error || '로딩 실패');
+    return;
+  }
+  state.todayChecks = r.checks || {};
+  state.comments = r.comments || {};
+  state.viewDate = r.viewDate || date;
+}
+
+async function loadDiscover() {
+  const r = await api('getDiscoverRooms', { nickname: state.user });
+  if (!r.ok) {
+    showToast(r.error || '로딩 실패');
+    return;
+  }
+  state.rooms = r.rooms || [];
+}
+
+async function loadStats() {
+  const r = await api('getStats', { nickname: state.user });
+  if (!r.ok) {
+    showToast(r.error || '로딩 실패');
+    return;
+  }
+  state.statsData = r.stats || {};
+}
+
+// ============================================================
+// HOME VIEW
+// ============================================================
+function renderHome() {
+  const isToday = state.viewDate === state.today;
+  const dateLabel = isToday 
+    ? `오늘 <span class="date-today-badge">${fmtDateLabel(state.viewDate)}</span>`
+    : `${fmtDateLabel(state.viewDate)} <span class="date-past-badge">기록</span>`;
+  
+  const myPromises = state.promises || [];
+  const total = myPromises.length;
+  const doneCount = myPromises.filter(p => (state.todayChecks[p.id]||{})[state.user] === 'done').length;
+  const rate = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  return `
+    <div class="screen">
+      <div class="home-header">
+        <div>
+          <div class="greet-small">안녕, ${escapeHtml(state.user)} 👋</div>
+          <div class="greet-big">우리 약속</div>
+        </div>
+        <button id="bellBtn" class="bell" aria-label="알림">
+          🔔
+          ${state.pokes.length > 0 ? `<div class="bell-badge">${state.pokes.length > 9 ? '9+' : state.pokes.length}</div>` : ''}
+        </button>
+      </div>
+      
+      <div class="date-nav">
+        <button id="prevDayBtn" class="date-arrow" aria-label="어제">‹</button>
+        <div class="date-label">${dateLabel}</div>
+        <button id="nextDayBtn" class="date-arrow" aria-label="내일" ${isToday ? 'disabled' : ''}>›</button>
+      </div>
+
+      ${total > 0 ? `
+      <div class="progress-card">
+        <div class="progress-row">
+          <div>
+            <div class="progress-info-label">${isToday ? '오늘 달성률' : '이 날 달성률'}</div>
+            <div class="progress-info-num">${doneCount}<span class="sub">/${total}</span></div>
+          </div>
+          <div>
+            <svg width="68" height="68" viewBox="0 0 68 68">
+              <circle cx="34" cy="34" r="28" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="6"/>
+              <circle cx="34" cy="34" r="28" fill="none" stroke="white" stroke-width="6"
+                stroke-linecap="round"
+                stroke-dasharray="${2*Math.PI*28}"
+                stroke-dashoffset="${2*Math.PI*28 * (1 - rate/100)}"
+                transform="rotate(-90 34 34)"
+                style="transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);"/>
+              <text x="34" y="40" text-anchor="middle" fill="white" font-size="16" font-weight="800" font-family="Pretendard">${rate}%</text>
+            </svg>
+          </div>
+        </div>
+      </div>` : ''}
+
+      <div class="tab-row">
+        <button class="tab-btn ${state.homeTab==='mine'?'active':''}" data-tab="mine">내 약속</button>
+        <button class="tab-btn ${state.homeTab==='discover'?'active':''}" data-tab="discover">둘러보기</button>
+      </div>
+
+      <div class="content" id="tabContent">
+        ${state.homeTab === 'mine' ? renderMineList(isToday) : renderDiscoverList()}
+      </div>
+
+      ${renderTabBar('home')}
+      ${state.modal === 'create' ? renderCreateModal() : ''}
+      ${state.modal === 'pin' ? renderPinModal() : ''}
+    </div>
+  `;
+}
+
+function renderMineList(isToday) {
+  const myPromises = state.promises || [];
+  if (myPromises.length === 0) {
+    return `
+      <div class="empty-state">
+        <div class="empty-emoji">🌱</div>
+        <div class="empty-title">아직 약속이 없어요</div>
+        <div class="empty-sub">+ 버튼으로 첫 약속을 만들거나<br>둘러보기에서 친구의 방에 들어가보세요</div>
+      </div>
+    `;
+  }
+
+  return myPromises.map((p, idx) => {
+    const checks = state.todayChecks[p.id] || {};
+    const myStatus = checks[state.user];
+    const stateCls = myStatus === 'done' ? 'done-state' : myStatus === 'fail' ? 'fail-state' : '';
+    const friendsDone = p.members.filter(m => m !== state.user && checks[m] === 'done').length;
+    const totalFriends = p.members.length - 1;
+    const streak = state.streaks[p.id + ':' + state.user]?.count || 0;
+    const isSecret = p.visibility === 'secret';
+    
+    let checkIcon = '';
+    let checkCls = '';
+    if (myStatus === 'done') { checkIcon = '✓'; checkCls = 'done'; }
+    else if (myStatus === 'fail') { checkIcon = '✕'; checkCls = 'fail'; }
+
+    return `
+      <div class="promise-card ${stateCls}" style="animation-delay:${idx * 50}ms">
+        <div class="promise-row">
+          <button class="check-circle ${checkCls}" data-check="${p.id}" aria-label="체크">
+            <span class="check-icon">${checkIcon}</span>
+          </button>
+          <div class="promise-body" data-detail="${p.id}">
+            <div class="promise-name-row">
+              <span class="promise-emoji">${escapeHtml(p.emoji||'🌱')}</span>
+              <span class="promise-name">${escapeHtml(p.name)}</span>
+              ${isSecret ? '<span class="lock-icon">🔒</span>' : ''}
+            </div>
+            <div class="promise-meta">
+              ${totalFriends >= 0 ? `<span class="meta-item"><span class="meta-icon">👥</span>${friendsDone}/${totalFriends + 1}</span>` : ''}
+              ${streak > 0 ? `<span class="meta-item meta-streak"><span class="meta-icon">🔥</span>${streak}일</span>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDiscoverList() {
+  if (!state.rooms || state.rooms.length === 0) {
+    return `
+      <div class="empty-state">
+        <div class="empty-emoji">🔍</div>
+        <div class="empty-title">아직 공개된 방이 없어요</div>
+        <div class="empty-sub">첫 번째 방을 만들어보세요</div>
+      </div>
+    `;
+  }
+  return state.rooms.map((r, idx) => {
+    const isSecret = r.visibility === 'secret';
+    const isMember = r.isMember;
+    const lockedView = isSecret && !isMember;
+    
+    return `
+      <div class="room-card ${lockedView ? 'secret-locked' : ''}" data-room="${r.id}" style="animation-delay:${idx * 50}ms">
+        <div class="room-card-top">
+          <div class="room-emoji-box">${lockedView ? '🔒' : escapeHtml(r.emoji||'🌱')}</div>
+          <div class="room-info">
+            <div class="room-name">${escapeHtml(r.name)}</div>
+            ${r.description ? `<div class="room-desc">${escapeHtml(r.description)}</div>` : (lockedView ? '<div class="room-desc">PIN을 입력해서 들어가요</div>' : '')}
+            <div class="room-meta">
+              ${isMember 
+                ? '<span class="room-badge member">✓ 참여 중</span>' 
+                : (isSecret ? '<span class="room-badge secret">🔒 비밀</span>' : '<span class="room-badge public">🌍 공개</span>')
+              }
+              <span class="room-badge count">👥 ${r.memberCount}명</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function bindHome() {
+  // 알림 버튼
+  $('#bellBtn').onclick = () => {
+    state.view = 'notifications';
+    render();
+  };
+  
+  // 날짜 이동
+  $('#prevDayBtn').onclick = async () => {
+    const d = prevDay(state.viewDate);
+    await loadDayData(d);
+    render();
+  };
+  $('#nextDayBtn').onclick = async () => {
+    if (state.viewDate === state.today) return;
+    const d = nextDay(state.viewDate);
+    await loadDayData(d);
+    render();
+  };
+  
+  // 탭 전환
+  $$('.tab-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const tab = btn.dataset.tab;
+      if (tab === state.homeTab) return;
+      state.homeTab = tab;
+      if (tab === 'discover') await loadDiscover();
+      render();
+    };
+  });
+  
+  // 약속 체크
+  $$('[data-check]').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.check;
+      const checks = state.todayChecks[id] || {};
+      const curr = checks[state.user];
+      const next = nextStatus(curr);
+      
+      // Optimistic update
+      checks[state.user] = next;
+      state.todayChecks[id] = checks;
+      
+      const r = await api('setStatus', { 
+        promiseId: id, 
+        nickname: state.user, 
+        status: next,
+        targetDate: state.viewDate,
+      });
+      if (r.ok && r.streak) {
+        state.streaks[id + ':' + state.user] = r.streak;
+      }
+      render();
+    };
+  });
+  
+  // 약속 상세
+  $$('[data-detail]').forEach(el => {
+    el.onclick = () => {
+      state.selectedPromiseId = el.dataset.detail;
+      state.view = 'detail';
+      render();
+    };
+  });
+  
+  // 둘러보기 방 클릭
+  $$('[data-room]').forEach(el => {
+    el.onclick = async () => {
+      const roomId = el.dataset.room;
+      const room = state.rooms.find(r => r.id === roomId);
+      if (!room) return;
+      
+      if (room.isMember) {
+        // 이미 멤버 → 상세로 이동
+        state.selectedPromiseId = roomId;
+        // promises에 없을 수도 있으니 init 재호출
+        await loadAll();
+        state.view = 'detail';
+        render();
+        return;
+      }
+      
+      if (room.visibility === 'secret') {
+        // PIN 모달
+        state.pinTargetRoom = room;
+        state.modal = 'pin';
+        render();
+      } else {
+        // 공개방 바로 입장
+        await joinRoom(roomId, '');
+      }
+    };
+  });
+  
+  // FAB 만들기
+  const fab = $('#fabBtn');
+  if (fab) fab.onclick = () => { state.modal = 'create'; render(); };
+  
+  // 탭바
+  bindTabBar();
+  
+  // 모달
+  if (state.modal === 'create') bindCreateModal();
+  if (state.modal === 'pin') bindPinModal();
+}
+
+// ============================================================
+// 방 입장
+// ============================================================
+async function joinRoom(roomId, pin) {
+  const r = await api('joinRoom', { promiseId: roomId, nickname: state.user, pin });
+  if (!r.ok) {
+    if (r.wrongPin) {
+      showToast('PIN이 일치하지 않아요 🔒');
+    } else {
+      showToast(r.error || '입장 실패');
+    }
+    return false;
+  }
+  if (r.alreadyMember) {
+    showToast('이미 참여 중인 방이에요');
+  } else {
+    showToast('방에 들어왔어요 🎉');
+  }
+  state.modal = null;
+  state.pinTargetRoom = null;
+  await loadAll();
+  await loadDiscover();
+  render();
+  return true;
+}
+
+// ============================================================
+// CREATE MODAL
+// ============================================================
+const EMOJI_LIST = ['🌱','📚','💧','🏃','🧘','🌙','✏️','🚫','💪','🎯','☀️','🍀','🥗','😴','📵','✨'];
+let createForm = { name: '', desc: '', emoji: '🌱', vis: 'public', pin: '' };
+
+function renderCreateModal() {
+  return `
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-head">
+          <div class="modal-title">새 약속 만들기</div>
+          <button class="modal-close" id="modalClose">✕</button>
+        </div>
+
+        <div class="field-group">
+          <label class="input-label">이모지</label>
+          <div class="emoji-grid" id="emojiGrid">
+            ${EMOJI_LIST.map(em => `
+              <button class="emoji-btn ${createForm.emoji===em?'selected':''}" data-emoji="${em}">${em}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="input-label">약속 이름 *</label>
+          <input id="createName" class="text-input" type="text" placeholder="예: 유튜브 안 보기" maxlength="20" value="${escapeHtml(createForm.name)}" />
+        </div>
+
+        <div class="field-group">
+          <label class="input-label">설명 (선택)</label>
+          <input id="createDesc" class="text-input" type="text" placeholder="이 약속이 왜 중요해?" maxlength="100" value="${escapeHtml(createForm.desc)}" />
+        </div>
+
+        <div class="field-group">
+          <label class="input-label">공개 설정</label>
+          <div class="visibility-row">
+            <button class="vis-option ${createForm.vis==='public'?'selected':''}" data-vis="public">
+              <div class="vis-emoji">🌍</div>
+              <div class="vis-label">공개방</div>
+              <div class="vis-desc">누구나 들어올 수 있음</div>
+            </button>
+            <button class="vis-option ${createForm.vis==='secret'?'selected':''}" data-vis="secret">
+              <div class="vis-emoji">🔒</div>
+              <div class="vis-label">비밀방</div>
+              <div class="vis-desc">PIN 아는 사람만</div>
+            </button>
+          </div>
+        </div>
+
+        ${createForm.vis === 'secret' ? `
+        <div class="field-group">
+          <label class="input-label">PIN 번호 (4자리)</label>
+          <input id="createPin" class="pin-input" type="tel" inputmode="numeric" placeholder="0000" maxlength="4" value="${escapeHtml(createForm.pin)}" />
+          <div class="field-hint">친구한테 알려줄 4자리 숫자 비밀번호</div>
+        </div>` : ''}
+
+        <button id="createSubmit" class="btn-primary">만들기</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindCreateModal() {
+  $('#modalOverlay').onclick = () => { state.modal = null; createForm = { name:'', desc:'', emoji:'🌱', vis:'public', pin:'' }; render(); };
+  $('#modalClose').onclick = () => { state.modal = null; createForm = { name:'', desc:'', emoji:'🌱', vis:'public', pin:'' }; render(); };
+  
+  $$('[data-emoji]').forEach(btn => {
+    btn.onclick = () => {
+      // 폼 입력값 보존하면서 이모지만 갱신
+      createForm.name = $('#createName').value;
+      createForm.desc = $('#createDesc').value;
+      if ($('#createPin')) createForm.pin = $('#createPin').value;
+      createForm.emoji = btn.dataset.emoji;
+      render();
+    };
+  });
+  
+  $$('[data-vis]').forEach(btn => {
+    btn.onclick = () => {
+      createForm.name = $('#createName').value;
+      createForm.desc = $('#createDesc').value;
+      if ($('#createPin')) createForm.pin = $('#createPin').value;
+      createForm.vis = btn.dataset.vis;
+      render();
+    };
+  });
+  
+  $('#createSubmit').onclick = async () => {
+    const name = $('#createName').value.trim();
+    const desc = $('#createDesc').value.trim();
+    const pin = $('#createPin') ? $('#createPin').value.trim() : '';
+    
+    if (!name) { showToast('약속 이름을 입력해주세요'); return; }
+    if (createForm.vis === 'secret' && !/^\d{4}$/.test(pin)) { showToast('PIN은 4자리 숫자로'); return; }
+    
+    const btn = $('#createSubmit');
+    btn.disabled = true;
+    btn.textContent = '만드는 중...';
+    
+    const r = await api('createPromise', {
+      name, description: desc, emoji: createForm.emoji,
+      visibility: createForm.vis, pin: pin || '',
+      createdBy: state.user,
+    });
+    
+    if (!r.ok) {
+      showToast(r.error || '실패');
+      btn.disabled = false;
+      btn.textContent = '만들기';
+      return;
+    }
+    
+    showToast('약속이 만들어졌어요 🎉');
+    state.modal = null;
+    createForm = { name:'', desc:'', emoji:'🌱', vis:'public', pin:'' };
+    await loadAll();
+    render();
+  };
+}
+
+// ============================================================
+// PIN MODAL
+// ============================================================
+function renderPinModal() {
+  const room = state.pinTargetRoom;
+  if (!room) return '';
+  return `
+    <div class="modal-overlay" id="pinOverlay">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-head">
+          <div class="modal-title">🔒 ${escapeHtml(room.name)}</div>
+          <button class="modal-close" id="pinClose">✕</button>
+        </div>
+        <div class="field-group">
+          <label class="input-label">PIN 번호 4자리</label>
+          <input id="pinEnter" class="pin-input" type="tel" inputmode="numeric" placeholder="0000" maxlength="4" autofocus />
+          <div class="field-hint">방을 만든 사람한테 PIN을 받아보세요</div>
+        </div>
+        <button id="pinSubmit" class="btn-primary">들어가기</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindPinModal() {
+  $('#pinOverlay').onclick = () => { state.modal = null; state.pinTargetRoom = null; render(); };
+  $('#pinClose').onclick = () => { state.modal = null; state.pinTargetRoom = null; render(); };
+  
+  const input = $('#pinEnter');
+  setTimeout(() => input.focus(), 100);
+  
+  const submit = async () => {
+    const pin = input.value.trim();
+    if (!/^\d{4}$/.test(pin)) { showToast('4자리 숫자를 입력해주세요'); return; }
+    const btn = $('#pinSubmit');
+    btn.disabled = true;
+    btn.textContent = '들어가는 중...';
+    await joinRoom(state.pinTargetRoom.id, pin);
+    btn.disabled = false;
+    btn.textContent = '들어가기';
+  };
+  
+  $('#pinSubmit').onclick = submit;
+  input.onkeydown = e => { if (e.key === 'Enter') submit(); };
+}
+
+// ============================================================
+// DETAIL VIEW
+// ============================================================
+function renderDetail() {
+  const p = state.promises.find(x => x.id === state.selectedPromiseId);
+  if (!p) {
+    setTimeout(() => { state.view = 'home'; render(); }, 0);
+    return '<div class="loading-screen"><div class="spinner"></div></div>';
+  }
+  
+  const checks = state.todayChecks[p.id] || {};
+  const isToday = state.viewDate === state.today;
+  const dateLabel = isToday ? '오늘' : fmtDateLabel(state.viewDate);
+  const promiseComments = state.comments[p.id] || [];
+  const isSecret = p.visibility === 'secret';
+  
+  return `
+    <div class="screen">
+      <div class="header">
+        <button class="header-back" id="backBtn">‹</button>
+        <div class="header-title">약속 상세</div>
+        <button class="header-back" id="leaveBtn" title="나가기">⋯</button>
+      </div>
+
+      <div class="content">
+        <div class="detail-hero">
+          <div class="detail-hero-emoji">${escapeHtml(p.emoji||'🌱')}</div>
+          <div class="detail-hero-name">${escapeHtml(p.name)} ${isSecret ? '<span class="lock-icon">🔒</span>' : ''}</div>
+          ${p.description ? `<div class="detail-hero-desc">${escapeHtml(p.description)}</div>` : ''}
+          <div class="detail-hero-meta">
+            👥 ${p.members.length}명이 함께 · ${escapeHtml(dateLabel)}
+          </div>
+        </div>
+
+        <div class="date-nav">
+          <button id="dPrev" class="date-arrow">‹</button>
+          <div class="date-label">${fmtDateLabel(state.viewDate)} ${isToday ? '<span class="date-today-badge">오늘</span>' : '<span class="date-past-badge">기록</span>'}</div>
+          <button id="dNext" class="date-arrow" ${isToday ? 'disabled' : ''}>›</button>
+        </div>
+
+        <div class="section-label">멤버</div>
+        ${p.members.map(m => {
+          const isMe = m === state.user;
+          const status = checks[m];
+          const streak = state.streaks[p.id + ':' + m]?.count || 0;
+          let checkIcon = '', checkCls = '';
+          if (status === 'done') { checkIcon = '✓'; checkCls = 'done'; }
+          else if (status === 'fail') { checkIcon = '✕'; checkCls = 'fail'; }
+          
+          return `
+            <div class="member-row">
+              <div class="member-info">
+                <button class="check-circle ${checkCls}" ${isMe ? `data-mcheck="${p.id}"` : 'disabled'} style="${isMe?'':'cursor:default;opacity:0.85;'}">
+                  <span class="check-icon">${checkIcon}</span>
+                </button>
+                <div>
+                  <div class="member-name">${escapeHtml(m)}${isMe?'<span class="me-tag">나</span>':''}</div>
+                  ${streak > 0 ? `<div class="member-streak">🔥 ${streak}일</div>` : ''}
+                </div>
+              </div>
+              ${!isMe && status !== 'done' ? `<button class="poke-btn" data-poke="${m}" data-pid="${p.id}">👉 콕</button>` : ''}
+            </div>
+          `;
+        }).join('')}
+
+        <div class="section-label">${isToday ? '오늘의 응원' : '이 날의 응원'}</div>
+        ${promiseComments.length === 0 ? '<div class="comment-empty">아직 응원이 없어요 ✨</div>' : ''}
+        ${promiseComments.map(c => `
+          <div class="comment-item">
+            <div class="comment-author">${escapeHtml(c.author)}</div>
+            <div class="comment-text">${escapeHtml(c.text)}</div>
+          </div>
+        `).join('')}
+        
+        <div class="comment-input-row">
+          <input id="commentInput" class="comment-input" type="text" placeholder="한 줄 응원..." maxlength="50" />
+          <button id="commentSend" class="comment-send">→</button>
+        </div>
+      </div>
+
+      ${renderTabBar('detail')}
+    </div>
+  `;
+}
+
+function bindDetail() {
+  $('#backBtn').onclick = () => { state.view = 'home'; render(); };
+  
+  $('#leaveBtn').onclick = async () => {
+    if (!confirm('이 약속에서 나갈까요?\n다시 들어오려면 둘러보기에서 찾아야 해요.')) return;
+    const r = await api('leaveRoom', { promiseId: state.selectedPromiseId, nickname: state.user });
+    if (r.ok) {
+      showToast('방에서 나왔어요');
+      state.view = 'home';
+      await loadAll();
+      render();
+    } else {
+      showToast(r.error || '실패');
+    }
+  };
+  
+  $('#dPrev').onclick = async () => {
+    const d = prevDay(state.viewDate);
+    await loadDayData(d);
+    render();
+  };
+  $('#dNext').onclick = async () => {
+    if (state.viewDate === state.today) return;
+    const d = nextDay(state.viewDate);
+    await loadDayData(d);
+    render();
+  };
+  
+  $$('[data-mcheck]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.mcheck;
+      const checks = state.todayChecks[id] || {};
+      const curr = checks[state.user];
+      const next = nextStatus(curr);
+      
+      checks[state.user] = next;
+      state.todayChecks[id] = checks;
+      
+      const r = await api('setStatus', { 
+        promiseId: id, nickname: state.user, 
+        status: next, targetDate: state.viewDate 
+      });
+      if (r.ok && r.streak) {
+        state.streaks[id + ':' + state.user] = r.streak;
+      }
+      render();
+    };
+  });
+  
+  $$('[data-poke]').forEach(btn => {
+    btn.onclick = async () => {
+      const target = btn.dataset.poke;
+      const pid = btn.dataset.pid;
+      const p = state.promises.find(x => x.id === pid);
+      
+      btn.classList.add('sent');
+      setTimeout(() => btn.classList.remove('sent'), 700);
+      
+      const r = await api('sendPoke', {
+        from: state.user, to: target, promiseId: pid,
+        promiseName: p?.name, promiseEmoji: p?.emoji,
+      });
+      if (r.ok) {
+        showToast(`${target}님께 콕! 👉`);
+      }
+    };
+  });
+  
+  const cInput = $('#commentInput');
+  const cBtn = $('#commentSend');
+  const submitComment = async () => {
+    const text = cInput.value.trim();
+    if (!text) return;
+    cBtn.disabled = true;
+    const r = await api('addComment', { 
+      promiseId: state.selectedPromiseId, 
+      author: state.user, 
+      text,
+      targetDate: state.viewDate,
+    });
+    if (r.ok) {
+      const newC = { author: state.user, text, time: new Date().toISOString() };
+      if (!state.comments[state.selectedPromiseId]) state.comments[state.selectedPromiseId] = [];
+      state.comments[state.selectedPromiseId].push(newC);
+      cInput.value = '';
+      render();
+    } else {
+      showToast('실패');
+    }
+    cBtn.disabled = false;
+  };
+  cBtn.onclick = submitComment;
+  cInput.onkeydown = e => { if (e.key === 'Enter') submitComment(); };
+  
+  bindTabBar();
+}
+
+// ============================================================
+// NOTIFICATIONS VIEW
+// ============================================================
+function renderNotifications() {
+  return `
+    <div class="screen">
+      <div class="header">
+        <button class="header-back" id="backBtn">‹</button>
+        <div class="header-title">받은 콕 👉</div>
+        ${state.pokes.length > 0 ? '<button class="text-mini-btn" id="clearBtn">비우기</button>' : '<div class="header-spacer"></div>'}
+      </div>
+
+      <div class="content">
+        ${state.pokes.length === 0 ? `
+          <div class="empty-state">
+            <div class="empty-emoji">📭</div>
+            <div class="empty-title">받은 콕이 없어요</div>
+            <div class="empty-sub">친구가 콕 찌르면 여기에 와요</div>
+          </div>
+        ` : state.pokes.slice().reverse().map(pk => {
+          const d = new Date(pk.createdAt);
+          const t = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+          return `
+            <div class="poke-card">
+              <div class="poke-avatar">👉</div>
+              <div class="poke-text">
+                <div class="poke-line"><span class="poke-from">${escapeHtml(pk.from)}</span>님이 콕 찔렀어요</div>
+                <div class="poke-meta">${escapeHtml(pk.promiseEmoji||'')} ${escapeHtml(pk.promiseName||'')} · ${t}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      ${renderTabBar('notifications')}
+    </div>
+  `;
+}
+
+// ============================================================
+// STATS VIEW
+// ============================================================
+function renderStats() {
+  const items = Object.entries(state.statsData || {});
+  
+  return `
+    <div class="screen">
+      <div class="header">
+        <button class="header-back" id="backBtn">‹</button>
+        <div class="header-title">이번 주 기록</div>
+        <div class="header-spacer"></div>
+      </div>
+
+      <div class="content">
+        ${items.length === 0 ? `
+          <div class="empty-state">
+            <div class="empty-emoji">📊</div>
+            <div class="empty-title">기록이 아직 없어요</div>
+            <div class="empty-sub">약속을 만들고 체크해보세요</div>
+          </div>
+        ` : items.map(([id, stat]) => {
+          const rateCls = stat.weekRate >= 70 ? 'high' : stat.weekRate >= 40 ? 'mid' : 'low';
+          const skipCount = 7 - stat.doneCount - stat.failCount;
+          
+          return `
+            <div class="stat-card">
+              <div class="stat-card-top">
+                <div class="stat-card-name">
+                  <span style="font-size:22px">${escapeHtml(stat.emoji||'🌱')}</span>
+                  <span>${escapeHtml(stat.name)}</span>
+                </div>
+                <div class="stat-rate-pill ${rateCls}">${stat.weekRate}%</div>
+              </div>
+              <div class="stat-days">
+                ${stat.days.map(d => `
+                  <div class="stat-day">
+                    <div class="stat-day-label">${d.label}</div>
+                    <div class="stat-day-cell ${d.status==='done'?'done':d.status==='fail'?'fail':''}">
+                      ${d.status==='done'?'✓':d.status==='fail'?'✕':''}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="stat-counts">
+                <span><span class="done-dot"></span>지킴 ${stat.doneCount}</span>
+                <span><span class="fail-dot"></span>못 지킴 ${stat.failCount}</span>
+                <span><span class="skip-dot"></span>미체크 ${skipCount}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      ${renderTabBar('stats')}
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB BAR
+// ============================================================
+function renderTabBar(activeTab) {
+  return `
+    <div class="tabbar">
+      <button class="tab-item ${activeTab==='home'?'active':''}" data-nav="home">
+        <div class="tab-icon">🏠</div>
+        <div class="tab-label">홈</div>
+      </button>
+      <button class="fab" id="fabBtn" aria-label="새 약속">+</button>
+      <button class="tab-item ${activeTab==='stats'?'active':''}" data-nav="stats">
+        <div class="tab-icon">📊</div>
+        <div class="tab-label">기록</div>
+      </button>
+    </div>
+  `;
+}
+
+function bindTabBar() {
+  $$('[data-nav]').forEach(btn => {
+    btn.onclick = async () => {
+      const target = btn.dataset.nav;
+      if (target === 'home') {
+        state.view = 'home';
+        state.viewDate = state.today;
+        await loadAll();
+        if (state.homeTab === 'discover') await loadDiscover();
+      } else if (target === 'stats') {
+        state.view = 'stats';
+        await loadStats();
+      }
+      render();
+    };
+  });
+  
+  const fab = $('#fabBtn');
+  if (fab) fab.onclick = () => { state.modal = 'create'; render(); };
+}
+
+function bindCommon() {
+  const back = $('#backBtn');
+  if (back) back.onclick = () => { state.view = 'home'; render(); };
+  
+  const clear = $('#clearBtn');
+  if (clear) clear.onclick = async () => {
+    if (!confirm('받은 콕을 모두 비울까요?')) return;
+    const r = await api('clearPokes', { nickname: state.user });
+    if (r.ok) {
+      state.pokes = [];
+      render();
+      showToast('비웠어요');
+    }
+  };
+  
+  bindTabBar();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+  const savedNick = loadNick();
+  
+  if (savedNick) {
+    state.user = savedNick;
+    // 닉네임 다시 등록(또는 확인)
+    const r = await api('login', { nickname: savedNick });
+    if (r.ok) {
+      await loadAll();
+      state.view = 'home';
+      render();
+      return;
+    } else {
+      clearNick();
+    }
+  }
+  
+  state.view = 'login';
+  render();
+  bindLogin();
+})();
+</script>
+</body>
+</html>
