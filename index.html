@@ -1284,7 +1284,41 @@ const state = {
   statsData: {},
   modal: null, // null | 'create' | 'pin' | 'leave'
   pinTargetRoom: null,
+  
+  // 로컬 우선 - 내가 방금 조작한 체크 상태 (서버 응답으로 덮어쓰지 않음)
+  // 형태: { 'promiseId:date:nickname': { status, ts } }
+  localOverrides: {},
+  // 진행 중인 setStatus 요청 개수
+  pendingWrites: 0,
 };
+
+// 로컬 오버라이드 키
+function overrideKey(promiseId, date, nickname) {
+  return `${promiseId}:${date}:${nickname}`;
+}
+
+// 서버에서 받은 체크 데이터에 로컬 오버라이드 병합
+function mergeLocalOverrides(checks, date) {
+  if (!checks) return checks;
+  const merged = { ...checks };
+  Object.keys(state.localOverrides).forEach(key => {
+    const [pid, d, nick] = key.split(':');
+    if (d !== date) return;
+    if (!merged[pid]) merged[pid] = {};
+    merged[pid] = { ...merged[pid], [nick]: state.localOverrides[key].status };
+  });
+  return merged;
+}
+
+// 오래된 오버라이드 정리 (5분 이상 지난 거)
+function cleanOldOverrides() {
+  const now = Date.now();
+  Object.keys(state.localOverrides).forEach(key => {
+    if (now - state.localOverrides[key].ts > 5 * 60 * 1000) {
+      delete state.localOverrides[key];
+    }
+  });
+}
 
 // ============================================================
 // Storage
@@ -1537,29 +1571,41 @@ function bindLogin() {
 // ============================================================
 // LOAD ALL
 // ============================================================
-async function loadAll() {
+async function loadAll(opts = {}) {
+  // 진행 중인 쓰기가 있으면 서버 데이터로 체크 덮어쓰지 않음
+  const skipChecks = state.pendingWrites > 0;
+  
   const r = await api('init', { nickname: state.user, viewDate: state.viewDate || undefined });
   if (!r.ok) {
-    showToast(r.error || '로딩 실패');
+    if (!opts.silent) showToast(r.error || '로딩 실패');
     return;
   }
   state.users = r.users || [];
   state.promises = r.promises || [];
-  state.todayChecks = r.todayChecks || {};
   state.streaks = r.streaks || {};
   state.pokes = r.pokes || [];
   state.comments = r.comments || {};
   state.today = r.today;
   state.viewDate = r.viewDate || r.today;
+  
+  cleanOldOverrides();
+  
+  if (skipChecks) {
+    // 진행 중 쓰기 있음 → 서버 응답을 그대로 적용하되 로컬 오버라이드 우선
+    state.todayChecks = mergeLocalOverrides(r.todayChecks || {}, state.viewDate);
+  } else {
+    state.todayChecks = mergeLocalOverrides(r.todayChecks || {}, state.viewDate);
+  }
 }
 
-async function loadDayData(date) {
+async function loadDayData(date, opts = {}) {
   const r = await api('getDayData', { nickname: state.user, viewDate: date });
   if (!r.ok) {
-    showToast(r.error || '로딩 실패');
+    if (!opts.silent) showToast(r.error || '로딩 실패');
     return;
   }
-  state.todayChecks = r.checks || {};
+  cleanOldOverrides();
+  state.todayChecks = mergeLocalOverrides(r.checks || {}, date);
   state.comments = r.comments || {};
   state.viewDate = r.viewDate || date;
 }
@@ -1780,10 +1826,17 @@ function bindHome() {
       checks[state.user] = next;
       state.todayChecks[id] = checks;
       
-      // 2. DOM 직접 업데이트 (re-render 없이!)
+      // 2. 로컬 오버라이드 기록 (서버 응답으로 덮어쓰지 못하도록)
+      state.localOverrides[overrideKey(id, state.viewDate, state.user)] = {
+        status: next,
+        ts: Date.now(),
+      };
+      
+      // 3. DOM 직접 업데이트 (re-render 없이!)
       updateCardOX(id, next);
       
-      // 3. API는 백그라운드 호출 (await 없이)
+      // 4. API는 백그라운드 호출
+      state.pendingWrites++;
       api('setStatus', { 
         promiseId: id, 
         nickname: state.user, 
@@ -1792,10 +1845,11 @@ function bindHome() {
       }).then(r => {
         if (r.ok && r.streak) {
           state.streaks[id + ':' + state.user] = r.streak;
-          // 스트릭 표시만 살짝 업데이트
           updateCardStreak(id, r.streak.count);
         }
-      }).catch(() => {});
+      }).catch(() => {}).finally(() => {
+        state.pendingWrites--;
+      });
     };
   });
   
@@ -2169,10 +2223,17 @@ function bindDetail() {
       checks[state.user] = next;
       state.todayChecks[id] = checks;
       
+      // 로컬 오버라이드 기록
+      state.localOverrides[overrideKey(id, state.viewDate, state.user)] = {
+        status: next,
+        ts: Date.now(),
+      };
+      
       // DOM 즉시 업데이트
       updateCardOX(id, next);
       
       // 백그라운드 호출
+      state.pendingWrites++;
       api('setStatus', { 
         promiseId: id, nickname: state.user, 
         status: next, targetDate: state.viewDate 
@@ -2180,7 +2241,9 @@ function bindDetail() {
         if (r.ok && r.streak) {
           state.streaks[id + ':' + state.user] = r.streak;
         }
-      }).catch(() => {});
+      }).catch(() => {}).finally(() => {
+        state.pendingWrites--;
+      });
     };
   });
   
@@ -2351,18 +2414,35 @@ function renderTabBar(activeTab) {
 
 function bindTabBar() {
   $$('[data-nav]').forEach(btn => {
-    btn.onclick = async () => {
+    btn.onclick = (e) => {
+      e.preventDefault();
       const target = btn.dataset.nav;
+      
       if (target === 'home') {
+        // 즉시 홈 화면으로 (캐시된 데이터로)
         state.view = 'home';
         state.viewDate = state.today;
-        await loadAll();
-        if (state.homeTab === 'discover') await loadDiscover();
+        render();
+        // 백그라운드로 데이터 갱신
+        loadAll({ silent: true }).then(() => {
+          if (state.view === 'home') {
+            // 화면이 아직 홈이면 다시 그림 (이때는 로컬 오버라이드 유지됨)
+            if (state.homeTab === 'discover') {
+              loadDiscover().then(() => state.view === 'home' && render());
+            } else {
+              render();
+            }
+          }
+        });
       } else if (target === 'stats') {
+        // 즉시 통계 화면으로 (이전 데이터 또는 빈 화면)
         state.view = 'stats';
-        await loadStats();
+        render();
+        // 백그라운드로 새 데이터
+        loadStats().then(() => {
+          if (state.view === 'stats') render();
+        });
       }
-      render();
     };
   });
   
