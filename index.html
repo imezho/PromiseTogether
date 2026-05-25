@@ -492,6 +492,55 @@ input, textarea {
   gap: 14px;
 }
 
+/* O·X 2버튼 그룹 (홈/카드) */
+.ox-group {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ox-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-soft);
+  background: var(--bg-elev);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink-4);
+  transition: transform 0.12s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ox-btn:active { transform: scale(0.88); }
+.ox-btn.o-btn.active {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: white;
+}
+.ox-btn.x-btn.active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: white;
+}
+
+/* 상세 화면(멤버 행)용 살짝 작은 버전 */
+.ox-group.compact .ox-btn {
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* 읽기 전용 (다른 멤버) */
+.ox-btn.readonly {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* 레거시(혹시 남아있을 경우) */
 .check-circle {
   width: 32px;
   height: 32px;
@@ -505,16 +554,9 @@ input, textarea {
   transition: all var(--t-spring);
   position: relative;
 }
-.check-circle.done {
-  background: var(--sage);
-  border-color: var(--sage);
-}
-.check-circle.fail {
-  background: var(--coral);
-  border-color: var(--coral);
-}
+.check-circle.done { background: var(--sage); border-color: var(--sage); }
+.check-circle.fail { background: var(--coral); border-color: var(--coral); }
 .check-circle:active { transform: scale(0.85); }
-
 .check-icon {
   color: white;
   font-weight: 900;
@@ -1336,6 +1378,81 @@ function escapeHtml(s) {
 }
 
 // ============================================================
+// DOM 직접 업데이트 (re-render 없이 빠르게)
+// ============================================================
+function updateCardOX(promiseId, status) {
+  // 홈 카드
+  const card = document.querySelector(`[data-card="${promiseId}"]`);
+  if (card) {
+    card.classList.remove('done-state', 'fail-state');
+    if (status === 'done') card.classList.add('done-state');
+    else if (status === 'fail') card.classList.add('fail-state');
+    
+    const oBtn = card.querySelector('.o-btn');
+    const xBtn = card.querySelector('.x-btn');
+    if (oBtn) oBtn.classList.toggle('active', status === 'done');
+    if (xBtn) xBtn.classList.toggle('active', status === 'fail');
+  }
+  // 상세 화면의 본인 행
+  const detailRow = document.querySelector(`[data-mrow="${promiseId}-${state.user}"]`);
+  if (detailRow) {
+    const oBtn = detailRow.querySelector('.o-btn');
+    const xBtn = detailRow.querySelector('.x-btn');
+    if (oBtn) oBtn.classList.toggle('active', status === 'done');
+    if (xBtn) xBtn.classList.toggle('active', status === 'fail');
+  }
+  
+  // 진행률 카드 즉시 업데이트 (홈 화면)
+  updateProgressCard();
+}
+
+function updateProgressCard() {
+  const progressCard = document.querySelector('.progress-card');
+  if (!progressCard) return;
+  
+  const total = state.promises.length;
+  const doneCount = state.promises.filter(p => 
+    (state.todayChecks[p.id]||{})[state.user] === 'done'
+  ).length;
+  const rate = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  
+  const numEl = progressCard.querySelector('.progress-info-num');
+  if (numEl) numEl.innerHTML = `${doneCount}<span class="sub">/${total}</span>`;
+  
+  const ring = progressCard.querySelector('circle:nth-child(2)');
+  if (ring) {
+    const r = 28;
+    ring.setAttribute('stroke-dashoffset', String(2 * Math.PI * r * (1 - rate / 100)));
+  }
+  
+  const rateText = progressCard.querySelector('text');
+  if (rateText) rateText.textContent = `${rate}%`;
+}
+
+function updateCardStreak(promiseId, count) {
+  // 홈 카드의 스트릭 메타 영역
+  const card = document.querySelector(`[data-card="${promiseId}"]`);
+  if (card) {
+    const meta = card.querySelector('.promise-meta');
+    if (meta) {
+      const existing = meta.querySelector('.meta-streak');
+      if (count > 0) {
+        if (existing) {
+          existing.innerHTML = `<span class="meta-icon">🔥</span>${count}일`;
+        } else {
+          const span = document.createElement('span');
+          span.className = 'meta-item meta-streak';
+          span.innerHTML = `<span class="meta-icon">🔥</span>${count}일`;
+          meta.appendChild(span);
+        }
+      } else if (existing) {
+        existing.remove();
+      }
+    }
+  }
+}
+
+// ============================================================
 // Render Root
 // ============================================================
 function render() {
@@ -1556,18 +1673,10 @@ function renderMineList(isToday) {
     const totalFriends = p.members.length - 1;
     const streak = state.streaks[p.id + ':' + state.user]?.count || 0;
     const isSecret = p.visibility === 'secret';
-    
-    let checkIcon = '';
-    let checkCls = '';
-    if (myStatus === 'done') { checkIcon = '✓'; checkCls = 'done'; }
-    else if (myStatus === 'fail') { checkIcon = '✕'; checkCls = 'fail'; }
 
     return `
-      <div class="promise-card ${stateCls}" style="animation-delay:${idx * 50}ms">
+      <div class="promise-card ${stateCls}" data-card="${p.id}" style="animation-delay:${idx * 50}ms">
         <div class="promise-row">
-          <button class="check-circle ${checkCls}" data-check="${p.id}" aria-label="체크">
-            <span class="check-icon">${checkIcon}</span>
-          </button>
           <div class="promise-body" data-detail="${p.id}">
             <div class="promise-name-row">
               <span class="promise-emoji">${escapeHtml(p.emoji||'🌱')}</span>
@@ -1578,6 +1687,10 @@ function renderMineList(isToday) {
               ${totalFriends >= 0 ? `<span class="meta-item"><span class="meta-icon">👥</span>${friendsDone}/${totalFriends + 1}</span>` : ''}
               ${streak > 0 ? `<span class="meta-item meta-streak"><span class="meta-icon">🔥</span>${streak}일</span>` : ''}
             </div>
+          </div>
+          <div class="ox-group">
+            <button class="ox-btn o-btn ${myStatus==='done'?'active':''}" data-set="${p.id}" data-status="done" aria-label="지킴">O</button>
+            <button class="ox-btn x-btn ${myStatus==='fail'?'active':''}" data-set="${p.id}" data-status="fail" aria-label="못 지킴">X</button>
           </div>
         </div>
       </div>
@@ -1652,29 +1765,37 @@ function bindHome() {
     };
   });
   
-  // 약속 체크
-  $$('[data-check]').forEach(btn => {
-    btn.onclick = async (e) => {
+  // 약속 O/X 버튼 (홈 카드)
+  $$('[data-set]').forEach(btn => {
+    btn.onclick = (e) => {
       e.stopPropagation();
-      const id = btn.dataset.check;
+      const id = btn.dataset.set;
+      const clicked = btn.dataset.status; // 'done' or 'fail'
       const checks = state.todayChecks[id] || {};
       const curr = checks[state.user];
-      const next = nextStatus(curr);
+      // 같은 버튼 다시 누르면 미체크로 복귀
+      const next = (curr === clicked) ? null : clicked;
       
-      // Optimistic update
+      // 1. 상태 즉시 갱신
       checks[state.user] = next;
       state.todayChecks[id] = checks;
       
-      const r = await api('setStatus', { 
+      // 2. DOM 직접 업데이트 (re-render 없이!)
+      updateCardOX(id, next);
+      
+      // 3. API는 백그라운드 호출 (await 없이)
+      api('setStatus', { 
         promiseId: id, 
         nickname: state.user, 
         status: next,
         targetDate: state.viewDate,
-      });
-      if (r.ok && r.streak) {
-        state.streaks[id + ':' + state.user] = r.streak;
-      }
-      render();
+      }).then(r => {
+        if (r.ok && r.streak) {
+          state.streaks[id + ':' + state.user] = r.streak;
+          // 스트릭 표시만 살짝 업데이트
+          updateCardStreak(id, r.streak.count);
+        }
+      }).catch(() => {});
     };
   });
   
@@ -1968,22 +2089,22 @@ function renderDetail() {
           const isMe = m === state.user;
           const status = checks[m];
           const streak = state.streaks[p.id + ':' + m]?.count || 0;
-          let checkIcon = '', checkCls = '';
-          if (status === 'done') { checkIcon = '✓'; checkCls = 'done'; }
-          else if (status === 'fail') { checkIcon = '✕'; checkCls = 'fail'; }
           
           return `
-            <div class="member-row">
+            <div class="member-row" data-mrow="${p.id}-${escapeHtml(m)}">
               <div class="member-info">
-                <button class="check-circle ${checkCls}" ${isMe ? `data-mcheck="${p.id}"` : 'disabled'} style="${isMe?'':'cursor:default;opacity:0.85;'}">
-                  <span class="check-icon">${checkIcon}</span>
-                </button>
                 <div>
                   <div class="member-name">${escapeHtml(m)}${isMe?'<span class="me-tag">나</span>':''}</div>
                   ${streak > 0 ? `<div class="member-streak">🔥 ${streak}일</div>` : ''}
                 </div>
               </div>
-              ${!isMe && status !== 'done' ? `<button class="poke-btn" data-poke="${m}" data-pid="${p.id}">👉 콕</button>` : ''}
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${!isMe && status !== 'done' ? `<button class="poke-btn" data-poke="${escapeHtml(m)}" data-pid="${p.id}">👉 콕</button>` : ''}
+                <div class="ox-group compact">
+                  <button class="ox-btn o-btn ${status==='done'?'active':''} ${isMe?'':'readonly'}" ${isMe?`data-mset="${p.id}" data-status="done"`:''}>O</button>
+                  <button class="ox-btn x-btn ${status==='fail'?'active':''} ${isMe?'':'readonly'}" ${isMe?`data-mset="${p.id}" data-status="fail"`:''}>X</button>
+                </div>
+              </div>
             </div>
           `;
         }).join('')}
@@ -2036,24 +2157,30 @@ function bindDetail() {
     render();
   };
   
-  $$('[data-mcheck]').forEach(btn => {
-    btn.onclick = async () => {
-      const id = btn.dataset.mcheck;
+  $$('[data-mset]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.mset;
+      const clicked = btn.dataset.status;
       const checks = state.todayChecks[id] || {};
       const curr = checks[state.user];
-      const next = nextStatus(curr);
+      const next = (curr === clicked) ? null : clicked;
       
       checks[state.user] = next;
       state.todayChecks[id] = checks;
       
-      const r = await api('setStatus', { 
+      // DOM 즉시 업데이트
+      updateCardOX(id, next);
+      
+      // 백그라운드 호출
+      api('setStatus', { 
         promiseId: id, nickname: state.user, 
         status: next, targetDate: state.viewDate 
-      });
-      if (r.ok && r.streak) {
-        state.streaks[id + ':' + state.user] = r.streak;
-      }
-      render();
+      }).then(r => {
+        if (r.ok && r.streak) {
+          state.streaks[id + ':' + state.user] = r.streak;
+        }
+      }).catch(() => {});
     };
   });
   
